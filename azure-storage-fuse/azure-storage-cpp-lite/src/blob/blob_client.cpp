@@ -307,6 +307,11 @@ std::future<storage_outcome<void>> blob_client::append_block_from_stream(const s
     request->set_content_length(static_cast<unsigned int>(end - cur));
     std:: cout << "content_length" << end - cur << std::endl;
 
+    std::string test;
+    is >> test;
+    std::cout << "chouchou: " << test << std::endl;
+    exit(0);
+
     http->set_input_stream(storage_istream(is));
 
     return async_executor<void>::submit(m_account, request, http, m_context);

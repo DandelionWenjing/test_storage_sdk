@@ -111,8 +111,8 @@ int main()
     //---------------------
     //append two blobs
     std::cout << "start append file" << std::endl;
-    bc.append_file_to_blob(appendFileName1, containerName, blobName);
-    bc.append_file_to_blob(appendFileName2, containerName, blobName);
+    bc.append_file_to_blob(appendFileName1, containerName, appendblobName);
+    //bc.append_file_to_blob(appendFileName2, containerName, appendblobName);
     std::cout << "end append file" << std::endl;
 
     //download append blob
