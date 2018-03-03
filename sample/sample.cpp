@@ -106,12 +106,14 @@ int main()
     }
     auto blobProperty = bc.get_blob_property(containerName, appendblobName);
     assert(errno == 0);
-    std::cout <<"Size of BLob: " << blobProperty.content_type << std::endl;
+    std::cout <<"Content type of BLob: " << blobProperty.content_type << std::endl;
 
     //---------------------
     //append two blobs
+    std::cout << "start append file" << std::endl;
     bc.append_file_to_blob(appendFileName1, containerName, blobName);
     bc.append_file_to_blob(appendFileName2, containerName, blobName);
+    std::cout << "end append file" << std::endl;
 
     //download append blob
 

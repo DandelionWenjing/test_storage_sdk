@@ -409,6 +409,7 @@ namespace microsoft_azure {
         }
 
         void blob_client_wrapper::append_blob(const std::string &sourcePath, const std::string &container, const std::string blob) {
+            std::cout << "append blob" << std::endl;
             if(!is_valid())
             {
                 errno = client_not_init;
@@ -570,7 +571,7 @@ namespace microsoft_azure {
                 /*errno already set by get_file_size*/
                 return;
             }
-            //std::cout << blob << "file size is: " << fileSize << std::endl;
+            std::cout << blob << "file size is: " << fileSize << std::endl;
 
             if(fileSize <= 64*1024*1024)
             {
@@ -584,7 +585,7 @@ namespace microsoft_azure {
             std::ifstream ifs(sourcePath);
             if(!ifs)
             {
-                //std::cout << "Failed to open " << sourcePath << std::endl;
+                std::cout << "Failed to open " << sourcePath << std::endl;
                 errno = unknown_error;
                 return;
             }
@@ -607,7 +608,7 @@ namespace microsoft_azure {
                     }
                 }
                 if (0 != result) {
-                    //std::cout << blob <<  " request failed: " << result << std::endl;
+                    std::cout << blob <<  " request failed: " << result << std::endl;
                     break;
                 }
                 int length = UPLOAD_CHUNK_SIZE;
@@ -618,13 +619,13 @@ namespace microsoft_azure {
 
                 char* buffer = (char*)malloc(UPLOAD_CHUNK_SIZE);
                 if (!buffer) {
-                    //std::cout << blob << " failed to allocate buffer" << std::endl;
+                    std::cout << blob << " failed to allocate buffer" << std::endl;
                     result = 12;
                     break;
                 }
                 if(!ifs.read(buffer, length))
                 {
-                    //std::cout << blob << " failed to read " << length << std::endl;
+                    std::cout << blob << " failed to read " << length << std::endl;
                     result = unknown_error;
                     break;
                 }
@@ -649,7 +650,7 @@ namespace microsoft_azure {
 
                         std::istringstream in;
                         in.rdbuf()->pubsetbuf(buffer, length);
-                        const auto blockResult = m_blobClient->append_block_from_stream(container, blob, block_id, in).get();
+                        const auto blockResult = m_blobClient->append_block_from_stream(container, blob, in).get();
                         free(buffer);
 
                         {
@@ -661,7 +662,7 @@ namespace microsoft_azure {
                         int result = 0;
                         if(!blockResult.success())
                         {
-                            // std::cout << blob << " upload failed " << blockResult.error().code << std::endl;
+                             std::cout << blob << " upload failed " << blockResult.error().code << std::endl;
                             result = std::stoi(blockResult.error().code);
                             if (0 == result) {
                                 // It seems that timeouted requests has no code setup
@@ -683,7 +684,7 @@ namespace microsoft_azure {
                 }
             }
             if (0 != result) {
-                //std::cout << blob << " request failed " << std::endl;
+                std::cout << blob << " request failed " << std::endl;
             }
             if(result == 0)
             {
@@ -691,7 +692,7 @@ namespace microsoft_azure {
                 if(!r.success())
                 {
                     result = std::stoi(r.error().code);
-                    //std::cout << blob << " put_block_list failed" << std::endl;
+                    std::cout << blob << " put_block_list failed" << std::endl;
                     if (0 == result) {
                         result = unknown_error;
                     }
