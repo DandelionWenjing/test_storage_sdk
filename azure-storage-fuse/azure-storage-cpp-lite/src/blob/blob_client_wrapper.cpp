@@ -373,7 +373,42 @@ namespace microsoft_azure {
             }
         }
 
-        void blob_client_wrapper::append_blob(const std::string &sourcePath, const std::string &container, const std::string blob, const std::vector<std::pair<std::string, std::string>> &metadata) {
+        void blob_client_wrapper::append_block_from_stream(const std::string &container, const std::string blob, std::istream &is) {
+            if(!is_valid())
+            {
+                errno = client_not_init;
+                return;
+            }
+            if(container.length() == 0 || blob.length() == 0)
+            {
+                errno = invalid_parameters;
+                return;
+            }
+
+            try
+            {
+                auto task = m_blobClient->append_block_from_stream(container, blob, is);
+                task.wait();
+                auto result = task.get();
+                if(!result.success())
+                {
+                    errno = std::stoi(result.error().code);
+                    if (errno == 0) {
+                        errno = 503;
+                    }
+                }
+                else
+                {
+                    errno = 0;
+                }
+            }
+            catch(std::exception ex)
+            {
+                errno = unknown_error;
+            }
+        }
+
+        void blob_client_wrapper::append_blob(const std::string &sourcePath, const std::string &container, const std::string blob) {
             if(!is_valid())
             {
                 errno = client_not_init;
@@ -399,7 +434,7 @@ namespace microsoft_azure {
 
             try
             {
-                auto task = m_blobClient->append_block_from_stream(container, blob, ifs, metadata);
+                auto task = m_blobClient->append_block_from_stream(container, blob, ifs);
                 task.wait();
                 auto result = task.get();
                 if(!result.success())
@@ -480,40 +515,6 @@ namespace microsoft_azure {
                 errno = unknown_error;
             }
         }
-        void blob_client_wrapper::append_block_from_stream(const std::string &container, const std::string blob, std::istream &is, const std::vector<std::pair<std::string, std::string>> &metadata) {
-            if(!is_valid())
-            {
-                errno = client_not_init;
-                return;
-            }
-            if(container.length() == 0 || blob.length() == 0)
-            {
-                errno = invalid_parameters;
-                return;
-            }
-
-            try
-            {
-                auto task = m_blobClient->append_block_from_stream(container, blob, is, metadata);
-                task.wait();
-                auto result = task.get();
-                if(!result.success())
-                {
-                    errno = std::stoi(result.error().code);
-                    if (errno == 0) {
-                        errno = 503;
-                    }
-                }
-                else
-                {
-                    errno = 0;
-                }
-            }
-            catch(std::exception ex)
-            {
-                errno = unknown_error;
-            }
-        }
 
 
         void blob_client_wrapper::upload_block_blob_from_stream(const std::string &container, const std::string blob, std::istream &is, const std::vector<std::pair<std::string, std::string>> &metadata)
@@ -573,7 +574,7 @@ namespace microsoft_azure {
 
             if(fileSize <= 64*1024*1024)
             {
-                append_blob(sourcePath, container, blob, metadata);
+                append_blob(sourcePath, container, blob);
                 // put_blob sets errno
 		return;
             }

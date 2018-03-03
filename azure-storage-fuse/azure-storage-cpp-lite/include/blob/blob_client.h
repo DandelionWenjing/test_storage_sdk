@@ -375,7 +375,7 @@ namespace microsoft_azure { namespace storage {
         void create_append(const std::string &container, const std::string blob);
         
 
-        void append_blob(const std::string &sourcePath, const std::string &container, const std::string blob, const std::vector<std::pair<std::string, std::string>> &metadata  = std::vector<std::pair<std::string, std::string>>());
+        void append_blob(const std::string &sourcePath, const std::string &container, const std::string blob);
         /// <summary>
         /// Uploads the contents of a blob from a local file, file size need to be equal or smaller than 64MB.
         /// </summary>
@@ -386,7 +386,7 @@ namespace microsoft_azure { namespace storage {
    
         void put_blob(const std::string &sourcePath, const std::string &container, const std::string blob, const std::vector<std::pair<std::string, std::string>> &metadata = std::vector<std::pair<std::string, std::string>>());
         
-        void append_block_from_stream(const std::string &container, const std::string blob, std::istream &is, const std::vector<std::pair<std::string, std::string>> &metadata = std::vector<std::pair<std::string, std::string>>());
+        void append_block_from_stream(const std::string &container, const std::string blob, std::istream &is);
         /// <summary>
         /// Uploads the contents of a blob from a stream.
         /// </summary>
