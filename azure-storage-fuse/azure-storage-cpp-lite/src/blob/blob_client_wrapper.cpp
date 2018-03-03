@@ -399,7 +399,7 @@ namespace microsoft_azure {
 
             try
             {
-                auto task = m_blobClient->append_block_from_stream(container, blob, ifs);
+                auto task = m_blobClient->append_block_from_stream(container, blob, ifs, metadata);
                 task.wait();
                 auto result = task.get();
                 if(!result.success())
