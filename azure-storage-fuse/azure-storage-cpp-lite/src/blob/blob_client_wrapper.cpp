@@ -435,7 +435,7 @@ namespace microsoft_azure {
 
             try
             {
-                auto task = m_blobClient->append_block_from_stream(container, blob, ifs);
+                auto task = m_blobClient->append_block_blob_from_stream(container, blob, ifs);
                 task.wait();
                 auto result = task.get();
                 if(!result.success())
@@ -554,7 +554,7 @@ namespace microsoft_azure {
             }
         }
         void blob_client_wrapper::append_file_to_blob(const std::string &sourcePath, const std::string &container, const std::string blob, const std::vector<std::pair<std::string, std::string>> &metadata, size_t parallel) {
-             if(!is_valid())
+              if(!is_valid())
             {
                 errno = client_not_init;
                 return;
@@ -573,15 +573,85 @@ namespace microsoft_azure {
             }
             std::cout << blob << "file size is: " << fileSize << std::endl;
 
-            if(fileSize <= 64*1024*1024)
+            if(fileSize + blob.length() > 4*1024*1024*50000) {
+                return;
+            }
+            std::cout << blob << "offsite= " << fileSize + blob.length() << std::endl;
+
+            std::ifstream ifs(sourcePath);
+            if(!ifs)
             {
-                append_blob(sourcePath, container, blob);
-                // put_blob sets errno
-		return;
+                std::cout << "Failed to open " << sourcePath << std::endl;
+                errno = unknown_error;
+                return;
             }
 
+            int length = fileSize;
+
+            char* buffer = (char*)malloc(length);
+            if (!buffer) {
+                std::cout << blob << " failed to allocate buffer" << std::endl;
+                result = 12;
+                break;
+            }
+            if(!ifs.read(buffer, length))
+            {
+                std::cout << blob << " failed to read " << length << std::endl;
+                result = unknown_error;
+                break;
+            }
+
+            const auto blockResult = m_blobClient->append_block_from_stream(container, blob, ifs).get();
+            free(buffer);
+
             int result = 0;
-            int block_size = 4*1024*1024;
+            if(!blockResult.success())
+            {
+                std::cout << blob << " upload failed " << blockResult.error().code << std::endl;
+                result = std::stoi(blockResult.error().code);
+                if (0 == result) {
+                    // It seems that timeouted requests has no code setup
+                    result = 503;
+                }
+            }
+
+            ifs.close();
+            errno = result;
+
+        }
+
+        void blob_client_wrapper::upload_file_to_blob(const std::string &sourcePath, const std::string &container, const std::string blob, const std::vector<std::pair<std::string, std::string>> &metadata, size_t parallel)
+        {
+            if(!is_valid())
+            {
+                errno = client_not_init;
+                return;
+            }
+            if(sourcePath.length() == 0 || container.length() == 0 || blob.length() == 0)
+            {
+                errno = invalid_parameters;
+                return;
+            }
+
+            off_t fileSize = get_file_size(sourcePath.c_str());
+            if(fileSize < 0)
+            {
+                /*errno already set by get_file_size*/
+                return;
+            }
+            //std::cout << blob << "file size is: " << fileSize << std::endl;
+
+            if(fileSize <= 0*1024*1024)
+            {
+                //If you are writing a block blob that is no more than 64 MB, you can upload it in its entirety with a single write operation
+                put_blob(sourcePath, container, blob, metadata);
+                // put_blob sets errno
+		        return;
+            }
+
+            //If the file is more than 64MB
+            int result = 0;
+            int block_size = 4*1024*1024; //each block is 4MB
             std::ifstream ifs(sourcePath);
             if(!ifs)
             {
@@ -596,6 +666,7 @@ namespace microsoft_azure {
             std::condition_variable cv;
             std::mutex cv_mutex;
 
+            //for each block size, do one for cycle
             for(long long offset = 0, idx = 0; offset < fileSize; offset += UPLOAD_CHUNK_SIZE, ++idx)
             {
                 // control the number of submitted jobs.
@@ -650,157 +721,6 @@ namespace microsoft_azure {
 
                         std::istringstream in;
                         in.rdbuf()->pubsetbuf(buffer, length);
-                        const auto blockResult = m_blobClient->append_block_from_stream(container, blob, in).get();
-                        free(buffer);
-
-                        {
-                            std::lock_guard<std::mutex> lock(mutex);
-                            ++parallel;
-                            cv.notify_one();
-                        }
-
-                        int result = 0;
-                        if(!blockResult.success())
-                        {
-                             std::cout << blob << " upload failed " << blockResult.error().code << std::endl;
-                            result = std::stoi(blockResult.error().code);
-                            if (0 == result) {
-                                // It seems that timeouted requests has no code setup
-                                result = 503;
-                            }
-                        }
-                        return result;
-                    });
-                task_list.push_back(std::move(single_put));
-            }
-
-            // wait for the rest of tasks
-            for(auto &task: task_list)
-            {
-                const auto r = task.get();
-                if(0 == result)
-                {
-                    result = r;
-                }
-            }
-            if (0 != result) {
-                std::cout << blob << " request failed " << std::endl;
-            }
-            if(result == 0)
-            {
-                const auto r = m_blobClient->put_block_list(container, blob, block_list, metadata).get();
-                if(!r.success())
-                {
-                    result = std::stoi(r.error().code);
-                    std::cout << blob << " put_block_list failed" << std::endl;
-                    if (0 == result) {
-                        result = unknown_error;
-                    }
-                }
-            }
-
-            ifs.close();
-            errno = result;
-        }
-
-        void blob_client_wrapper::upload_file_to_blob(const std::string &sourcePath, const std::string &container, const std::string blob, const std::vector<std::pair<std::string, std::string>> &metadata, size_t parallel)
-        {
-            if(!is_valid())
-            {
-                errno = client_not_init;
-                return;
-            }
-            if(sourcePath.length() == 0 || container.length() == 0 || blob.length() == 0)
-            {
-                errno = invalid_parameters;
-                return;
-            }
-
-            off_t fileSize = get_file_size(sourcePath.c_str());
-            if(fileSize < 0)
-            {
-                /*errno already set by get_file_size*/
-                return;
-            }
-            //std::cout << blob << "file size is: " << fileSize << std::endl;
-
-            if(fileSize <= 64*1024*1024)
-            {
-                put_blob(sourcePath, container, blob, metadata);
-                // put_blob sets errno
-		return;
-            }
-
-            int result = 0;
-            int block_size = 4*1024*1024;
-            std::ifstream ifs(sourcePath);
-            if(!ifs)
-            {
-                //std::cout << "Failed to open " << sourcePath << std::endl;
-                errno = unknown_error;
-                return;
-            }
-
-            std::vector<put_block_list_request_base::block_item> block_list;
-            std::deque<std::future<int>> task_list;
-            std::mutex mutex;
-            std::condition_variable cv;
-            std::mutex cv_mutex;
-
-            for(long long offset = 0, idx = 0; offset < fileSize; offset += UPLOAD_CHUNK_SIZE, ++idx)
-            {
-                // control the number of submitted jobs.
-                while(task_list.size() > m_concurrency)
-                {
-                    auto r = task_list.front().get();
-                    task_list.pop_front();
-                    if (0 == result) {
-                        result = r;
-                    }
-                }
-                if (0 != result) {
-                    //std::cout << blob <<  " request failed: " << result << std::endl;
-                    break;
-                }
-                int length = UPLOAD_CHUNK_SIZE;
-                if(offset + length > fileSize)
-                {
-                    length = fileSize - offset;
-                }
-
-                char* buffer = (char*)malloc(UPLOAD_CHUNK_SIZE);
-                if (!buffer) {
-                    //std::cout << blob << " failed to allocate buffer" << std::endl;
-                    result = 12;
-                    break;
-                }
-                if(!ifs.read(buffer, length))
-                {
-                    //std::cout << blob << " failed to read " << length << std::endl;
-                    result = unknown_error;
-                    break;
-                }
-                const std::string block_id = index_to_block_id(idx);
-                put_block_list_request_base::block_item block;
-                block.id = block_id;
-                block.type = put_block_list_request_base::block_type::uncommitted;
-                block_list.push_back(block);
-                auto single_put = std::async(std::launch::async, [block_id, block_size, idx, this, buffer, offset, length, &container, &blob, &parallel, &mutex, &cv_mutex, &cv](){
-                        {
-                            std::unique_lock<std::mutex> lk(cv_mutex);
-                            cv.wait(lk, [&parallel, &mutex]() {
-                                    std::lock_guard<std::mutex> lock(mutex);
-                                    if(parallel > 0)
-                                    {
-                                        --parallel;
-                                        return true;
-                                    }
-                                    return false;
-                                });
-                        }
-
-                        std::istringstream in;
-                        in.rdbuf()->pubsetbuf(buffer, length);
                         const auto blockResult = m_blobClient->upload_block_from_stream(container, blob, block_id, in).get();
                         free(buffer);
 
@@ -813,7 +733,7 @@ namespace microsoft_azure {
                         int result = 0;
                         if(!blockResult.success())
                         {
-                            // std::cout << blob << " upload failed " << blockResult.error().code << std::endl;
+                            std::cout << blob << " upload failed " << blockResult.error().code << std::endl;
                             result = std::stoi(blockResult.error().code);
                             if (0 == result) {
                                 // It seems that timeouted requests has no code setup
