@@ -40,6 +40,8 @@ int main()
     std::string uploadFileName = "test.txt";
     std::string downloadFileName = "download.txt";
     std::string appendblobName = "appendblob";
+    std::string appendFileName1 = "test1.txt";
+    std::string appendFileName2 = "test2.txt";
 
     bool exists = true;
     blob_client_wrapper bc(bC);
@@ -88,20 +90,28 @@ int main()
 
     bc.delete_blob(containerName, blobName);
     bc.delete_blob(destContainerName, destBlobName);
-    /*assert(errno == 0);
+    assert(errno == 0);
     exists = bc.blob_exists(containerName, blobName);
     assert(errno == 0);
-    assert(!exists);*/
+    assert(!exists);
     */
+
+    //-------------------
+    //create append blob
     exists = bc.blob_exists(containerName, appendblobName);
     std::cout << "exists" << exists << std::endl;
     //create an append blob
     if(!exists) {
         bc.create_append(containerName, appendblobName);
     }
-    
+    auto blobProperty = bc.get_blob_property(containerName, appendblobName);
+    assert(errno == 0);
+    std::cout <<"Size of BLob: " << blobProperty.content_type << std::endl;
 
+    //---------------------
     //append two blobs
+    bc.append_file_to_blob(appendFileName1, containerName, blobName);
+    bc.append_file_to_blob(appendFileName2, containerName, blobName);
 
     //download append blob
 

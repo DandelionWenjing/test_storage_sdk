@@ -373,7 +373,9 @@ namespace microsoft_azure { namespace storage {
         /// <param name="container"> The container name.</param>
         /// <param name="blob"> The blob name. </param>
         void create_append(const std::string &container, const std::string blob);
+        
 
+        void append_blob(const std::string &sourcePath, const std::string &container, const std::string blob, const std::vector<std::pair<std::string, std::string>> &metadata);
         /// <summary>
         /// Uploads the contents of a blob from a local file, file size need to be equal or smaller than 64MB.
         /// </summary>
@@ -381,9 +383,10 @@ namespace microsoft_azure { namespace storage {
         /// <param name="container">The container name.</param>
         /// <param name="blob">The blob name.</param>
         /// <param name="metadata">A <see cref="std::vector"> that respresents metadatas.</param>
-
+   
         void put_blob(const std::string &sourcePath, const std::string &container, const std::string blob, const std::vector<std::pair<std::string, std::string>> &metadata = std::vector<std::pair<std::string, std::string>>());
-
+        
+        void append_block_from_stream(const std::string &container, const std::string blob, std::istream &is, const std::vector<std::pair<std::string, std::string>> &metadata);
         /// <summary>
         /// Uploads the contents of a blob from a stream.
         /// </summary>
@@ -393,6 +396,7 @@ namespace microsoft_azure { namespace storage {
         /// <param name="metadata">A <see cref="std::vector"> that respresents metadatas.</param>
         void upload_block_blob_from_stream(const std::string &container, const std::string blob, std::istream &is, const std::vector<std::pair<std::string, std::string>> &metadata = std::vector<std::pair<std::string, std::string>>());
 
+        void append_file_to_blob(const std::string &sourcePath, const std::string &container, const std::string blob, const std::vector<std::pair<std::string, std::string>> &metadata, size_t parallel);
         /// <summary>
         /// Uploads the contents of a blob from a local file.
         /// </summary>
