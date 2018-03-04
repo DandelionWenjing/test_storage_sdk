@@ -53,14 +53,14 @@ int main()
         bc.create_container(containerName);
         assert(errno == 0);
     }
-    
+    /*
     assert(errno == 0);
     exists = bc.blob_exists(containerName, "testsss.txt");
     assert(errno == 0);
     assert(!exists);
     std::cout <<"Start upload Blob: " << blobName << std::endl;
     bc.upload_file_to_blob(uploadFileName, containerName, blobName);
-    /*
+    
     std::cout <<"Error upload Blob: " << errno << std::endl;
     assert(errno == 0);
 
@@ -96,7 +96,7 @@ int main()
     assert(errno == 0);
     assert(!exists);
     */
-/*
+
     //-------------------
     //create append blob
     exists = bc.blob_exists(containerName, appendblobName);
@@ -110,7 +110,7 @@ int main()
     std::cout <<"Content type of BLob: " << blobProperty.content_type << std::endl;
 
     //---------------------
-    //append two blobs
+    //append block to blobs
     std::cout << "start append file" << std::endl;
     bc.append_file_to_blob(appendFileName1, containerName, appendblobName);
     //bc.append_file_to_blob(appendFileName2, containerName, appendblobName);
@@ -121,6 +121,6 @@ int main()
     //bc.delete_container(containerName);
     //assert(errno == 0);
     //std::this_thread::sleep_for(std::chrono::seconds(5));
-*/
+
 
 }
