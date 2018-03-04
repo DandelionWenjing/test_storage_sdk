@@ -396,7 +396,7 @@ namespace microsoft_azure { namespace storage {
         /// <param name="metadata">A <see cref="std::vector"> that respresents metadatas.</param>
         void upload_block_blob_from_stream(const std::string &container, const std::string blob, std::istream &is, const std::vector<std::pair<std::string, std::string>> &metadata = std::vector<std::pair<std::string, std::string>>());
 
-        void append_file_to_blob(const std::string &sourcePath, const std::string &container, const std::string blob);
+        void append_file_to_blob(const std::string &sourcePath, const std::string &container, const std::string blob, const std::vector<std::pair<std::string, std::string>> &metadata = std::vector<std::pair<std::string, std::string>>(), size_t parallel = 8);
         /// <summary>
         /// Uploads the contents of a blob from a local file.
         /// </summary>

@@ -435,7 +435,7 @@ namespace microsoft_azure {
 
             try
             {
-                auto task = m_blobClient->append_block_blob_from_stream(container, blob, ifs);
+                auto task = m_blobClient->append_block_from_stream(container, blob, ifs);
                 task.wait();
                 auto result = task.get();
                 if(!result.success())
@@ -592,7 +592,7 @@ namespace microsoft_azure {
             //for each block size, do one for cycle
             for(long long offset = 0, idx = 0; offset < fileSize; offset += UPLOAD_CHUNK_SIZE, ++idx)
             {
-                std:: cout << "idx=" << idx <<
+                std:: cout << "idx=" << idx << std::endl;
                 // control the number of submitted jobs.
                 while(task_list.size() > m_concurrency)
                 {
@@ -679,7 +679,6 @@ namespace microsoft_azure {
                     result = r;
                 }
             }
-            exit()
             if (0 != result) {
                 //std::cout << blob << " request failed " << std::endl;
             }
@@ -836,7 +835,6 @@ namespace microsoft_azure {
                     result = r;
                 }
             }
-            exit()
             if (0 != result) {
                 //std::cout << blob << " request failed " << std::endl;
             }

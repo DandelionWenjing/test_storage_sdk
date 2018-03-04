@@ -42,6 +42,7 @@ int main()
     std::string appendblobName = "appendblob";
     std::string appendFileName1 = "test1.txt";
     std::string appendFileName2 = "test2.txt";
+    std::string appenddownloadFile = "appendownload.txt"
 
     bool exists = true;
     blob_client_wrapper bc(bC);
@@ -113,10 +114,13 @@ int main()
     //append block to blobs
     std::cout << "start append file" << std::endl;
     bc.append_file_to_blob(appendFileName1, containerName, appendblobName);
-    //bc.append_file_to_blob(appendFileName2, containerName, appendblobName);
+    bc.append_file_to_blob(appendFileName2, containerName, appendblobName);
     std::cout << "end append file" << std::endl;
 
     //download append blob
+    bc.download_blob_to_file(containerName, appendblobName, downloadFileName);
+    std::cout <<"Download Blob done: " << errno << std::endl;
+    assert(errno == 0);
 
     //bc.delete_container(containerName);
     //assert(errno == 0);
