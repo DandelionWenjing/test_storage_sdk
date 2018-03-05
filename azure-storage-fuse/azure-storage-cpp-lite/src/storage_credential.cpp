@@ -76,6 +76,7 @@ namespace microsoft_azure {
             transformed_url.append(constants::query_api_version).append("=").append(constants::header_value_storage_version);
             transformed_url.append("&").append(m_sas_token);
             h.set_url(transformed_url);
+            //std::cout << "transformed_url " << transformed_url << std::endl;
         }
 
     }
