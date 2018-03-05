@@ -573,7 +573,7 @@ namespace microsoft_azure {
                 /*errno already set by get_file_size*/
                 return;
             }
-            std::cout << blob << "file size is: " << fileSize << std::endl;
+            //std::cout << blob << "file size is: " << fileSize << std::endl;
 
             int result = 0;
             //int block_size = 4*1024*1024; //each block is 4MB
@@ -591,7 +591,7 @@ namespace microsoft_azure {
             {
                 std::vector<put_block_list_request_base::block_item> block_list;
 
-                std:: cout << "idx=" << idx << std::endl;
+                //std:: cout << "idx=" << idx << std::endl;
 
                 if (0 != result) {
                     std::cout << blob <<  " request failed: " << result << std::endl;
@@ -623,10 +623,10 @@ namespace microsoft_azure {
 
                 std::istringstream in;
                 in.rdbuf()->pubsetbuf(buffer, length);
-                std::cout << "shahhs" << std::endl;
+                //std::cout << "shahhs" << std::endl;
                 const auto blockResult = m_blobClient->append_block_from_stream(container, blob, in).get();
                 free(buffer);
-                std::cout << "ahhahahaha" << std::endl;
+                //std::cout << "ahhahahaha" << std::endl;
 
                 int result = 0;
                 if(!blockResult.success())

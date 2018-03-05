@@ -305,7 +305,7 @@ std::future<storage_outcome<void>> blob_client::append_block_from_stream(const s
     is.seekg(cur);
     //check < 2^32
     request->set_content_length(static_cast<unsigned int>(end - cur));
-    std:: cout << "content_length" << end - cur << std::endl;
+    //std:: cout << "content_length" << end - cur << std::endl;
     
     /*
     std::string test;

@@ -29,7 +29,7 @@ int main()
     //std::string account_key = "vaDY8xu+u0iqSZBcdsNwjAULSFXLaFd7LXT3sV8PsFPI4cla7y1k026KNqve401OuRGTosO5q4z/sm2oodTYRg==";
     std::string m_sas_token = "sv=2017-04-17&sig=ABJdLYXhtXeJu8sxB4jXaPjuPoke11opVP1Q%2FJ3GvwE%3D&spr=https&se=2018-03-06T03%3A14%3A19Z&srt=co&ss=b&sp=racupwdl";
     std::shared_ptr<storage_credential>  cred = std::make_shared<shared_access_signature_credential>(m_sas_token);
-    std::cout << "hahahha" << std::endl;
+    //std::cout << "hahahha" << std::endl;
     //std::shared_ptr<storage_credential>  cred = std::make_shared<shared_key_credential>(account_name, account_key);
     std::shared_ptr<storage_account> account = std::make_shared<storage_account>(account_name, cred, true);
     auto bC = std::make_shared<blob_client>(account, 10);
@@ -39,9 +39,9 @@ int main()
     std::string containerName = "jasontest1";
     std::string blobName = "blob";
     std::string destContainerName = "jasontest1";
-    std::string destBlobName = "test.txt.copy";
+    std::string destBlobName = "blob.copy";
     std::string uploadFileName = "test.txt";
-    std::string downloadFileName = "download.txt";
+    std::string downloadFileName = "../../download.ts";
     std::string appendblobName = "appendblob";
     std::string appendFileName1 = "../../test1.ts";
     std::string appendFileName2 = "../../test2.ts";
@@ -68,15 +68,15 @@ int main()
     auto blobProperty = bc.get_blob_property(containerName, blobName);
     assert(errno == 0);
     std::cout <<"Content type of BLob: " << blobProperty.content_type << std::endl;
-    /*
-    std::cout <<"Error upload Blob: " << errno << std::endl;
-    assert(errno == 0);
+    
+    //std::cout <<"Error upload Blob: " << errno << std::endl;
+    //assert(errno == 0);
 
     exists = bc.blob_exists(containerName, blobName);
     assert(errno == 0);
     assert(exists);
 
-    auto blobProperty = bc.get_blob_property(containerName, blobName);
+    blobProperty = bc.get_blob_property(containerName, blobName);
     assert(errno == 0);
     std::cout <<"Size of BLob: " << blobProperty.size << std::endl;
 
@@ -89,14 +89,16 @@ int main()
     std::cout <<"Download Blob done: " << errno << std::endl;
     assert(errno == 0);
 
-    // copy blob 
+    // copy blob
+    /* 
     bc.start_copy(containerName, blobName, destContainerName, destBlobName);
     auto property = bc.get_blob_property(destContainerName, destBlobName);
     std::cout << "Copy status: " << property.copy_status <<std::endl;
     exists = bc.blob_exists(destContainerName, destBlobName);
     assert(errno == 0);
-    assert(exists);
-
+    */
+    //assert(exists);
+    /*
     bc.delete_blob(containerName, blobName);
     bc.delete_blob(destContainerName, destBlobName);
     assert(errno == 0);
